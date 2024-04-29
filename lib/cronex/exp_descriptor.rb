@@ -1,5 +1,3 @@
-require 'unicode'
-
 module Cronex
 
   CASINGS  = [:title, :sentence, :lower]
@@ -175,11 +173,11 @@ module Cronex
     def transform_case(desc, case_type = :lower)
       case case_type
       when :sentence
-        desc.sub(/\b[[:word:]]/u) { |s| Unicode.upcase(s) }
+        desc.sub(/\b[[:word:]]/u) { |s| s.upcase }
       when :title
-        desc.gsub(/\b[[:word:]]/u) { |s| Unicode.upcase(s) }
+        desc.gsub(/\b[[:word:]]/u) { |s| s.upcase }
       else
-        Unicode.downcase(desc)
+        desc.downcase
       end
     end
 
