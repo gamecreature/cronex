@@ -42,7 +42,11 @@ module Cronex
         expect(desc('*/5 * * * *')).to eq('Каждые 5 минут')
       end
 
-      it 'every 5 minute 0 */5' do
+      it 'every 5 minutes at Midnight' do
+        expect(desc('*/5 0 * * *')).to eq('Каждые 5 минут, в 12:00 AM')
+      end
+
+      it 'every 5 minutes 0 */5' do
         expect(desc('0 */5 * * * *')).to eq('Каждые 5 минут')
       end
 
@@ -293,12 +297,12 @@ module Cronex
         'В 00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50 и 55 минут часа')
     end
 
-    it 'every x minute past the hour with interval' do
+    it 'every X minutes past the hour with interval' do
       expect(desc('0 0-30/2 17 ? * MON-FRI')).to eq(
         'Каждые 2 минут, минуты с 00 по 30, в 5:00 PM, понедельник - пятница')
     end
 
-    it 'every x days with interval' do
+    it 'every X days with interval' do
       expect(desc('30 7 1-L/2 * *')).to eq('В 7:30 AM, каждые 2 дня(ей), между 1 днем и последним днем месяца')
     end
 
@@ -333,22 +337,30 @@ module Cronex
     end
 
     context 'minutes past the hour:' do
+      it 'minutes past the hour 5,10, midnight hour' do
+        expect(desc('5,10 0 * * *')).to eq('В 05 и 10 минут часа, в 12:00 AM')
+      end
+
       it 'minutes past the hour 5,10' do
-        expect(desc('5,10 0 * * *')).to eq('В 05 и 10 минут часа')
+        expect(desc('5,10 * * * *')).to eq('В 05 и 10 минут часа')
       end
 
       it 'minutes past the hour 5,10 day 2' do
-        expect(desc('5,10 0 2 * *')).to eq('В 05 и 10 минут часа, 2 день месяца')
+        expect(desc('5,10 * 2 * *')).to eq('В 05 и 10 минут часа, 2 день месяца')
       end
 
       it 'minutes past the hour 5/10 day 2' do
-        expect(desc('5/10 0 2 * *')).to eq('Каждые 10 минут, начало в 05 минут часа, 2 день месяца')
+        expect(desc('5/10 * 2 * *')).to eq('Каждые 10 минут, начало в 05 минут часа, 2 день месяца')
       end
     end
 
     context 'seconds past the minute:' do
+      it 'seconds past the minute 5,6, midnight hour' do
+        expect(desc('5,6 0 0 * * *')).to eq('В 5 и 6 секунд, в 12:00 AM')
+      end
+
       it 'seconds past the minute 5,6' do
-        expect(desc('5,6 0 0 * * *')).to eq('В 5 и 6 секунд')
+        expect(desc('5,6 0 * * * *')).to eq('В 5 и 6 секунд')
       end
 
       it 'seconds past the minute 5,6 at 1' do
@@ -356,7 +368,7 @@ module Cronex
       end
 
       it 'seconds past the minute 5,6 day 2' do
-        expect(desc('5,6 0 0 2 * *')).to eq('В 5 и 6 секунд, 2 день месяца')
+        expect(desc('5,6 0 * 2 * *')).to eq('В 5 и 6 секунд, 2 день месяца')
       end
     end
 

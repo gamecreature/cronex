@@ -42,7 +42,11 @@ module Cronex
         expect(desc('*/5 * * * *')).to eq('Every 5 minutes')
       end
 
-      it 'every 5 minute 0 */5' do
+      it 'every 5 minutes at Midnight' do
+        expect(desc('*/5 0 * * *')).to eq('Every 5 minutes, at 12:00 AM')
+      end
+
+      it 'every 5 minutes 0 */5' do
         expect(desc('0 */5 * * * *')).to eq('Every 5 minutes')
       end
 
@@ -293,12 +297,12 @@ module Cronex
         'At 00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50 and 55 minutes past the hour')
     end
 
-    it 'every x minute past the hour with interval' do
+    it 'every X minutes past the hour with interval' do
       expect(desc('0 0-30/2 17 ? * MON-FRI')).to eq(
         'Every 2 minutes, minutes 00 through 30 past the hour, at 5:00 PM, Monday through Friday')
     end
 
-    it 'every x days with interval' do
+    it 'every X days with interval' do
       expect(desc('30 7 1-L/2 * *')).to eq('At 7:30 AM, every 2 days, between day 1 and the last day of the month')
     end
 
@@ -333,22 +337,30 @@ module Cronex
     end
 
     context 'minutes past the hour:' do
+      it 'minutes past the hour 5,10, midnight hour' do
+        expect(desc('5,10 0 * * *')).to eq('At 05 and 10 minutes past the hour, at 12:00 AM')
+      end
+
       it 'minutes past the hour 5,10' do
-        expect(desc('5,10 0 * * *')).to eq('At 05 and 10 minutes past the hour')
+        expect(desc('5,10 * * * *')).to eq('At 05 and 10 minutes past the hour')
       end
 
       it 'minutes past the hour 5,10 day 2' do
-        expect(desc('5,10 0 2 * *')).to eq('At 05 and 10 minutes past the hour, on day 2 of the month')
+        expect(desc('5,10 * 2 * *')).to eq('At 05 and 10 minutes past the hour, on day 2 of the month')
       end
 
       it 'minutes past the hour 5/10 day 2' do
-        expect(desc('5/10 0 2 * *')).to eq('Every 10 minutes, starting at 05 minutes past the hour, on day 2 of the month')
+        expect(desc('5/10 * 2 * *')).to eq('Every 10 minutes, starting at 05 minutes past the hour, on day 2 of the month')
       end
     end
 
     context 'seconds past the minute:' do
+      it 'seconds past the minute 5,6, midnight hour' do
+        expect(desc('5,6 0 0 * * *')).to eq('At 5 and 6 seconds past the minute, at 12:00 AM')
+      end
+
       it 'seconds past the minute 5,6' do
-        expect(desc('5,6 0 0 * * *')).to eq('At 5 and 6 seconds past the minute')
+        expect(desc('5,6 0 * * * *')).to eq('At 5 and 6 seconds past the minute')
       end
 
       it 'seconds past the minute 5,6 at 1' do
@@ -356,7 +368,7 @@ module Cronex
       end
 
       it 'seconds past the minute 5,6 day 2' do
-        expect(desc('5,6 0 0 2 * *')).to eq('At 5 and 6 seconds past the minute, on day 2 of the month')
+        expect(desc('5,6 0 * 2 * *')).to eq('At 5 and 6 seconds past the minute, on day 2 of the month')
       end
     end
 
@@ -387,6 +399,12 @@ module Cronex
 
       it 'year increments' do
         expect(desc('0 0 0 1 MAR * 2010/5')).to eq('At 12:00 AM, on day 1 of the month, only in March, every 5 years, starting in 2010')
+      end
+    end
+
+    context 'strict_quartz' do
+      it '5 part cron fails' do
+        expect { desc('* * * * *', strict_quartz: true) }.to raise_error(Cronex::ExpressionError)
       end
     end
 
