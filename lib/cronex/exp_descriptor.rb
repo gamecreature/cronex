@@ -13,7 +13,8 @@ module Cronex
     throw_exception_on_parse_error: true,
     strict_quartz: false,
     locale: nil,
-    timezone: nil
+    timezone: nil,
+    time_format: nil
   }
 
   class ExpressionDescriptor
@@ -22,6 +23,8 @@ module Cronex
     def initialize(expression, options = {})
       @expression = expression
       @options = CRONEX_OPTS.merge(options)
+      @options[:time_format] ||= '%H:%M' if @options[:use_24_hour_time_format]
+
       @expression_parts = []
       @parsed = false
       @resources = Cronex::Resource.new(@options[:locale])
@@ -131,19 +134,19 @@ module Cronex
       description = ''
       if [sec_exp, min_exp, hour_exp].all? { |exp| !Cronex::Utils.include_any?(exp, SPECIAL_CHARS) }
         # specific time of day (i.e. 10 14)
-        description += resources.get('at') + ' ' + Cronex::Utils.format_time(hour_exp, min_exp, sec_exp, timezone)
+        description += resources.get('at') + ' ' + Cronex::Utils.format_time(hour_exp, min_exp, sec_exp, timezone, format: options[:time_format])
       elsif min_exp.include?('-') && !min_exp.include?('/') && !min_exp.include?(',') && !Cronex::Utils.include_any?(hour_exp, SPECIAL_CHARS)
         # Minute range in single hour (e.g. 0-10 11)
         min_parts = min_exp.split('-')
         description += format(
           resources.get('every_minute_between'),
-          Cronex::Utils.format_time(hour_exp, min_parts[0], '', timezone),
-          Cronex::Utils.format_time(hour_exp, min_parts[1], '', timezone))
+          Cronex::Utils.format_time(hour_exp, min_parts[0], '', timezone, format: options[:time_format]),
+          Cronex::Utils.format_time(hour_exp, min_parts[1], '', timezone, format: options[:time_format]))
       elsif hour_exp.include?(',') && !Cronex::Utils.include_any?(min_exp, SPECIAL_CHARS)
         # Hours list with single minute (e.g. 30 6,14,16)
         hour_parts = hour_exp.split(',')
         description += resources.get('at')
-        h_parts = hour_parts.map { |part| ' ' + Cronex::Utils.format_time(part, min_exp, '', timezone) }
+        h_parts = hour_parts.map { |part| ' ' + Cronex::Utils.format_time(part, min_exp, '', timezone, format: options[:time_format]) }
         description += h_parts[0...-1].join(',') + ' ' + resources.get('and') + h_parts.last
       else
         sec_desc = seconds_description(expression_parts)
